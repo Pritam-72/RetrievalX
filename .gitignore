@@ -27,7 +27,7 @@ frontend/.env.local
 # Runtime data and model caches
 uploads/
 backend/uploads/
-models/
+/models/
 .cache/
 *.log
 
