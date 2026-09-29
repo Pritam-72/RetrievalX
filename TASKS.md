@@ -51,16 +51,16 @@ This queue is the executable implementation plan. Work in order and keep each ph
 
 ## Phase 1 (V0): Proof of Concept: single PDF → answer
 
-- [ ] **T1.1 Extraction service (P0)**: `extraction_service.py`
+- [x] **T1.1 Extraction service (P0)**: `extraction_service.py`
   - PDF via PyMuPDF returning `list[PageText(page_number, text)]`.
   - *Accept:* unit test on a fixture PDF returns correct page count and text; scanned/empty PDF raises `NoExtractableTextError`.
-- [ ] **T1.2 Text cleaning (P0)**
+- [x] **T1.2 Text cleaning (P0)**
   - Whitespace normalization, de-hyphenation, repeating header/footer removal.
   - *Accept:* unit tests with before/after strings.
-- [ ] **T1.3 Chunking service (P0)**: `chunking_service.py`
+- [x] **T1.3 Chunking service (P0)**: `chunking_service.py`
   - Recursive splitter (600 tokens, 80 overlap, 100 min), page mapping (`page_start`, `page_end`), section titles when detectable.
   - *Accept:* no chunk exceeds max size; overlap present; every chunk has a valid page; chunk text never crosses documents. See `docs/RAG_PIPELINE.md §3`.
-- [ ] **T1.4 Embedding service (P0)**: `embedding_service.py`
+- [x] **T1.4 Embedding service (P0)**: `embedding_service.py`
   - Load BGE-small once (singleton), `embed_passages(list[str])`, `embed_query(str)` with BGE prefix, normalized vectors, batch size 32.
   - *Accept:* output dim = 384; norms ≈ 1; query/passages use different prefixes (test).
 - [ ] **T1.5 Ingestion script (P0)**
@@ -69,13 +69,13 @@ This queue is the executable implementation plan. Work in order and keep each ph
 - [ ] **T1.6 Retriever v0 (P0)**: `retriever.py`
   - Cosine top-N scoped by `user_id` + `document_ids` (required params).
   - *Accept:* integration test (testcontainers) returns expected chunk for a known question; calling without `user_id` is a type/test failure.
-- [ ] **T1.7 LLM client (P0)**: `llm_client.py`
+- [x] **T1.7 LLM client (P0)**: `llm_client.py`
   - `LLMClient` protocol + Gemini adapter (+ Ollama adapter stub). Temperature 0, JSON output.
   - *Accept:* mocked test for parse success/failure; real call behind an env flag.
-- [ ] **T1.8 Prompt + generation (P0)**: `prompts.py`, `pipeline.py` (v0)
+- [x] **T1.8 Prompt + generation (P0)**: `prompts.py`, `pipeline.py` (v0)
   - Use system prompt from `docs/RAG_PIPELINE.md §7`; parse into `LLMAnswer` Pydantic model.
   - *Accept:* CLI `python -m app.scripts.ask "question"` prints answer + sources.
-- [ ] **T1.9 Minimal refusal (P0)**
+- [x] **T1.9 Minimal refusal (P0)**
   - `REFUSAL_MESSAGE` constant; refuse when no chunks or `answerable=false`.
   - *Accept:* Tests A and C pass with real or stubbed LLM.
 
@@ -177,6 +177,7 @@ This queue is the executable implementation plan. Work in order and keep each ph
 | 2026-09-29 | T0.2 | Compose file is implemented, but live pgvector validation is pending because Docker is unavailable on the host. | `docker` is not installed or on PATH. |
 | 2026-09-29 | T0.3 | Health, lint, and formatting checks pass; mypy is pending because it is not installed. | The environment has no `mypy` executable. |
 | 2026-09-29 | T0.4 | ORM metadata, migration syntax, offline SQL generation, and unit checks pass; live upgrade/down is pending. | The available PostgreSQL server rejects the documented local credentials, and Docker is unavailable. |
+| 2026-09-29 | T1.5/T1.6 | Ingestion and retrieval code plus unit contracts are implemented; database-backed acceptance is pending. | PostgreSQL/pgvector is not available with usable local credentials. |
 
 ## Known Issues / Backlog
 
