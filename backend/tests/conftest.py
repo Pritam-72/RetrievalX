@@ -80,6 +80,7 @@ async def create_seed_document(
     email: str,
     filename: str,
     content: str,
+    embedding: list[float] | None = None,
 ) -> tuple[UUID, UUID]:
     user_id = uuid4()
     document_id = uuid4()
@@ -108,7 +109,7 @@ async def create_seed_document(
             page_start=1,
             page_end=1,
             token_count=len(content.split()),
-            embedding=[1 / (384**0.5)] * 384,
+            embedding=embedding or [1 / (384**0.5)] * 384,
             chunk_metadata={},
         )
     )

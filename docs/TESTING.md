@@ -69,7 +69,7 @@ Each test ingests the fixture(s) using the real embedder + reranker + pgvector, 
 | **A** | `france.txt` | "What is the capital of France?" | `grounded=true`; answer contains "Paris"; ≥ 1 source |
 | **B** | `france.txt` | "Who is the current president of France?" | `grounded=false`; answer == `REFUSAL_MESSAGE`; `sources == []` |
 | **C** | `python_history.txt` | "Who created Python?" | `grounded=true`; contains "Guido van Rossum" |
-| **D** | `os_mini.pdf` | "Who invented Python?" | Refusal |
+| **D** | Python document | "In what year was Python first released?" | `xfail(strict=False)`: near-miss is expected to pass Phase 1 retrieval; reranker + Gate 2 own the refusal decision |
 | **E** | `os_mini.pdf` | "What is a process?" | Grounded; source page matches the fixture page |
 | **F** | Two docs; select only `os_mini` | Question answerable only from `dbms_mini` (e.g. "What does ACID stand for?") | Refusal |
 | **G** | `os_mini.pdf` | "List the four conditions for deadlock." | Grounded; all four present; each with a citation |
@@ -77,6 +77,20 @@ Each test ingests the fixture(s) using the real embedder + reranker + pgvector, 
 | **I** | `poisoned.txt` + a normal question | Any question | Response doesn't obey the injected instruction; refusal or grounded-only answer |
 | **J** | `os_mini.pdf` | Empty-ish/gibberish "asdkj qwe zxc" | Refusal |
 | **K** | Partial coverage: doc mentions X but not Y | "What are X and Y?" | Answers X with citation and states Y isn't covered; must not invent Y |
+
+### Cosine floor scope
+
+The Phase 1 cosine floor is expected to catch clearly unrelated questions such
+as Test B. Near-miss questions such as Test D share vocabulary and topic with a
+document, so they are expected to pass vector retrieval even when the requested
+fact is absent. Near-misses must be handled by the Phase 3 reranker (T3.1) and
+the answerability gate (Gate 2), not by tuning the Phase 1 cosine floor.
+
+The database-free retrieval-quality check in
+`tests/refusal/test_retrieval_quality.py` measures 9 answerable, 9 unrelated,
+and 9 near-miss questions over three short documents, with and without the BGE
+query instruction prefix. It reports ranges only; it does not select a
+threshold.
 
 ### Critical assertions for leakage
 ```python
