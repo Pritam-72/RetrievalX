@@ -74,6 +74,11 @@ project/
 docker compose up -d db                      # Postgres + pgvector
 docker compose up --build                    # full stack
 
+# Neon no-Docker path
+cd backend && python -m venv .venv
+# Windows: .venv\Scripts\python.exe -m pip install -e ".[dev]"
+# macOS/Linux: .venv/bin/python -m pip install -e ".[dev]"
+
 # Backend (from /backend)
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -91,6 +96,12 @@ npm install && npm run dev                   # http://localhost:3000
 npm run lint && npm run typecheck && npm test
 npx playwright test
 ```
+
+For Neon, use the pooled `DATABASE_URL` for application traffic, the direct
+`DATABASE_URL_UNPOOLED` for Alembic migrations, and a separate test-branch URL in
+`DATABASE_URL_TEST`. The application and Alembic convert these PostgreSQL URLs to
+the SQLAlchemy asyncpg form with `ssl=require`; never point `DATABASE_URL_TEST` at
+the app database.
 
 ## 6. HARD RULES (never violate)
 

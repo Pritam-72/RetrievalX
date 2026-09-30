@@ -5,10 +5,17 @@ from alembic import context
 from sqlalchemy import Connection, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from app.config import get_settings, to_asyncpg_url
 from app.db.base import Base
 from app.models import entities  # noqa: F401
 
 config = context.config
+
+settings = get_settings()
+database_url = settings.database_url_unpooled or settings.database_url
+config.set_main_option(
+    "sqlalchemy.url", to_asyncpg_url(database_url).replace("%", "%%")
+)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

@@ -25,7 +25,9 @@ FRONTEND_ORIGIN=http://localhost:3000
 REQUEST_TIMEOUT_SECONDS=60
 
 # Database
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/docqa
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/docqa # pooled app URL
+DATABASE_URL_UNPOOLED=                              # direct URL for Alembic
+DATABASE_URL_TEST=                                   # separate test branch URL
 
 # Storage
 STORAGE_BACKEND=local             # local | s3
@@ -212,12 +214,37 @@ then `docker exec -it <ollama> ollama pull qwen2.5:7b` (or Llama) and set `LLM_P
 
 ## 4. Local Development Flow
 
+### 4.1 Neon without Docker
+
+Neon is the no-Docker path for PostgreSQL + pgvector. Link the project and create
+the `dev` and `test` branches with the Neon CLI in your own terminal, then pull
+each branch's variables. Keep the pooled URL in `DATABASE_URL` for application
+traffic. Keep the direct/unpooled URL in `DATABASE_URL_UNPOOLED` for Alembic, and
+put the separate test branch URL in `DATABASE_URL_TEST`. The application and
+Alembic both use the shared URL converter in `app/config.py`; it emits
+`postgresql+asyncpg://...?...&ssl=require` for asyncpg.
+
+Set up the Python environment from `backend/`:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m alembic upgrade head
+```
+
+On macOS/Linux, replace `.\.venv\Scripts\python.exe` with `./.venv/bin/python`.
+The database-backed integration and refusal suites skip with a clear message when
+`DATABASE_URL_TEST` is empty and fail if it is the same database as `DATABASE_URL`.
+
+### 4.2 Docker fallback
+
 ```bash
 cp backend/.env.example backend/.env       # add GEMINI_API_KEY
 cp frontend/.env.example frontend/.env.local
 docker compose up -d db
 cd backend && python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt && alembic upgrade head
+pip install -e ".[dev]" && alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 # new terminal
 cd frontend && npm install && npm run dev

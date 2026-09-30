@@ -84,7 +84,22 @@ docker compose up --build
 The first start downloads embedding/reranker models (~1 GB).
 
 ### Without Docker
-See `docs/DEPLOYMENT.md §4`.
+
+Neon is the supported no-Docker PostgreSQL + pgvector path. From `backend/`, create
+the virtualenv and install the project with its development tools:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
+
+On macOS/Linux, use `./.venv/bin/python` in the equivalent commands. Put the
+pooled Neon URL in `DATABASE_URL`, the direct/unpooled URL in
+`DATABASE_URL_UNPOOLED`, and the separate test-branch URL in `DATABASE_URL_TEST`.
+The app uses `DATABASE_URL`; Alembic uses `DATABASE_URL_UNPOOLED` and converts
+either PostgreSQL URL to the asyncpg form with `ssl=require`.
+
+See `docs/DEPLOYMENT.md §4` for the complete flow.
 
 ## Evaluation Results
 
@@ -105,7 +120,8 @@ Ablations (vector-only vs. hybrid; with/without reranker; with/without verifier)
 
 ```bash
 cd backend
-pytest -q                 # everything
+.venv\\Scripts\\python.exe -m pytest -q  # Windows
+# .venv/bin/python -m pytest -q           # macOS/Linux
 pytest tests/refusal -q   # "no outside knowledge" contract
 pytest tests/security -q  # cross-user isolation
 python -m eval.run_eval --dataset eval/dataset.jsonl

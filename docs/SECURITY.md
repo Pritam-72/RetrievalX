@@ -144,9 +144,21 @@ Also: storage quota per user (e.g. 500 MB, 50 documents) and a max of 20 documen
 ## 10. Secrets & Config
 
 - Env vars via `pydantic-settings`; `.env.example` lists keys without values.
-- CI secret scanning (gitleaks). Never commit `.env`.
+- CI secret scanning runs gitleaks on every push and pull request via
+   `.github/workflows/secret-scan.yml`. Never commit `.env` or paste credentials
+   into chat, issues, or logs.
 - Separate keys per environment; rotate on suspicion of exposure.
 - The app fails fast at startup if required secrets are missing in prod.
+
+Run the same scan locally when gitleaks is installed:
+
+```powershell
+gitleaks detect --source . --redact
+```
+
+The `--redact` option keeps detected secret values out of command output. If a
+tracked secret is found, stop and rotate it before changing history; rewriting
+history requires explicit approval.
 
 ---
 

@@ -178,6 +178,7 @@ This queue is the executable implementation plan. Work in order and keep each ph
 | 2026-09-29 | T0.3 | Health, lint, and formatting checks pass; mypy is pending because it is not installed. | The environment has no `mypy` executable. |
 | 2026-09-29 | T0.4 | ORM metadata, migration syntax, offline SQL generation, and unit checks pass; live upgrade/down is pending. | The available PostgreSQL server rejects the documented local credentials, and Docker is unavailable. |
 | 2026-09-29 | T1.5/T1.6 | Ingestion and retrieval code plus unit contracts are implemented; database-backed acceptance is pending. | PostgreSQL/pgvector is not available with usable local credentials. |
+| 2026-09-30 | Type checking | 19 existing strict-mypy diagnostics remain deferred: `app/services/extraction_service.py:4` (`fitz` has no stubs); `app/rag/llm_client.py:44,70` (provider JSON responses return `Any`); `app/rag/retriever.py:50-56` (untyped SQLAlchemy result row fields); `app/services/embedding_service.py:17,20,21,23` (NumPy array generics and `Any` from the model); `app/rag/pipeline.py:28` (NumPy array versus `Sequence[float]`); `app/scripts/ingest.py:26,33` and `app/scripts/ask.py:53,58` (untyped session parameters and `Any` scalar results). | These are pre-existing typing issues outside the Neon wiring and Phase 1 acceptance path; resolving them requires broader typed adapters/stubs and should be handled as a focused follow-up rather than weakening types or adding blanket ignores. |
 
 ## Known Issues / Backlog
 

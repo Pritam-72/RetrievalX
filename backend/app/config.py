@@ -1,7 +1,34 @@
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def to_asyncpg_url(url: str) -> str:
+    """Convert a PostgreSQL URL to the SQLAlchemy asyncpg form."""
+    if not url:
+        raise ValueError("A PostgreSQL URL is required")
+
+    parsed = urlsplit(url)
+    if parsed.scheme not in {"postgres", "postgresql", "postgresql+asyncpg"}:
+        raise ValueError(f"Unsupported database URL scheme: {parsed.scheme}")
+
+    query = [
+        (key, value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+        if key not in {"sslmode", "ssl"}
+    ]
+    query.append(("ssl", "require"))
+    return urlunsplit(
+        (
+            "postgresql+asyncpg",
+            parsed.netloc,
+            parsed.path,
+            urlencode(query),
+            parsed.fragment,
+        )
+    )
 
 
 class Settings(BaseSettings):
@@ -12,6 +39,8 @@ class Settings(BaseSettings):
     log_content: bool = False
     frontend_origin: str = "http://localhost:3000"
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/docqa"
+    database_url_unpooled: str = ""
+    database_url_test: str = ""
     upload_dir: str = "./uploads"
     max_upload_mb: int = Field(default=25, gt=0)
     embedding_model: str = "BAAI/bge-small-en-v1.5"
