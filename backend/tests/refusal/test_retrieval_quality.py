@@ -2,7 +2,6 @@ import numpy as np
 
 from app.services.embedding_service import get_embedding_service
 
-
 CORPUS = {
     "france.txt": (
         "Paris is the capital city of France. France uses the euro and its national "

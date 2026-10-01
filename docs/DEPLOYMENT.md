@@ -21,6 +21,7 @@
 APP_ENV=dev                       # dev | test | staging | prod
 LOG_LEVEL=INFO
 LOG_CONTENT=false                 # never true in prod
+DEBUG_ENABLED=false               # expose chat retrieval/gate debug only when true
 FRONTEND_ORIGIN=http://localhost:3000
 REQUEST_TIMEOUT_SECONDS=60
 
@@ -60,6 +61,7 @@ CHUNK_MIN_TOKENS=100
 TOP_N=20
 TOP_K=5
 MIN_COSINE=0.30
+MAX_QUESTION_LENGTH=2000
 MIN_TOP_SCORE=0.40                # PLACEHOLDER: calibrate with eval/calibrate_threshold.py
 MIN_CHUNK_SCORE=0.30              # PLACEHOLDER: calibrate
 MAX_CONTEXT_TOKENS=3000

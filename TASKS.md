@@ -75,7 +75,7 @@ This queue is the executable implementation plan. Work in order and keep each ph
 - [x] **T1.8 Prompt + generation (P0)**: `prompts.py`, `pipeline.py` (v0)
   - Use system prompt from `docs/RAG_PIPELINE.md §7`; parse into `LLMAnswer` Pydantic model.
   - *Accept:* CLI `python -m app.scripts.ask "question"` prints answer + sources.
-- [x] **T1.9 Minimal refusal (P0)**
+- [ ] **T1.9 Minimal refusal (P0)**
   - `REFUSAL_MESSAGE` constant; refuse when no chunks or `answerable=false`.
   - *Accept:* Tests A and C pass with real or stubbed LLM.
 
@@ -180,6 +180,8 @@ This queue is the executable implementation plan. Work in order and keep each ph
 | 2026-09-29 | T1.5/T1.6 | Ingestion and retrieval code plus unit contracts are implemented; database-backed acceptance is pending. | PostgreSQL/pgvector is not available with usable local credentials. |
 | 2026-09-30 | Type checking | 19 existing strict-mypy diagnostics remain deferred: `app/services/extraction_service.py:4` (`fitz` has no stubs); `app/rag/llm_client.py:44,70` (provider JSON responses return `Any`); `app/rag/retriever.py:50-56` (untyped SQLAlchemy result row fields); `app/services/embedding_service.py:17,20,21,23` (NumPy array generics and `Any` from the model); `app/rag/pipeline.py:28` (NumPy array versus `Sequence[float]`); `app/scripts/ingest.py:26,33` and `app/scripts/ask.py:53,58` (untyped session parameters and `Any` scalar results). | These are pre-existing typing issues outside the Neon wiring and Phase 1 acceptance path; resolving them requires broader typed adapters/stubs and should be handled as a focused follow-up rather than weakening types or adding blanket ignores. |
 | 2026-09-30 | Retrieval quality | The Phase 1 cosine floor is intended to catch unrelated B-type questions only. D-type near-misses are expected to pass vector retrieval and are deferred to T3.1 reranking plus Gate 2; the D database test is `xfail(strict=False)`. | A small real-BGE corpus measurement is diagnostic only and does not tune a threshold. |
+| 2026-09-30 | Phase 2 boundary | Near-miss questions are not refused until Phase 3 reranking and Gate 2 are implemented; Phase 2 preserves retrieval evidence and never calls the LLM only when Gate 1 has no candidates. | This prevents tuning the cosine floor to solve a relevance distinction it cannot reliably make. |
+| 2026-09-30 | Phase 2 implementation | Backend document/chat/conversation/feedback routes, fixed dev-user ownership, typed contracts, debug gating, upload processing, and frontend workspace are implemented; Phase 2 exit remains pending database-backed contract and refusal tests. | The configured test database was unavailable during this pass, so no Phase 2 checkbox is being marked complete. |
 
 ## Known Issues / Backlog
 

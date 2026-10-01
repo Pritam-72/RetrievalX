@@ -129,7 +129,7 @@ Rules:
   "sources": []
 }
 ```
-In development (`APP_ENV=dev`) an extra `"debug": { "reason": "below_threshold", "top_score": 0.12, "timings_ms": {...} }` field is included; **never in production**.
+When `DEBUG_ENABLED=true` and `APP_ENV != prod`, an extra `"debug": { "top_scores": [...], "gate_outcomes": {...}, "timings_ms": {...} }` field is included; **never in production**. Gate 1 returns before the LLM call when the cosine floor removes every candidate.
 
 ### 3.2 `POST /chat/stream` (SSE, Phase 4)
 Same request body. `Content-Type: text/event-stream`.
