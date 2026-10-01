@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 from uuid import UUID
 
 REFUSAL_MESSAGE = "I couldn't find the answer in the uploaded documents."
@@ -20,7 +21,8 @@ class PipelineResult:
     answer: str
     grounded: bool
     sources: list[Source]
+    debug: dict[str, Any] = field(default_factory=dict)
 
 
 def refusal() -> PipelineResult:
-    return PipelineResult(answer=REFUSAL_MESSAGE, grounded=False, sources=[])
+    return PipelineResult(answer=REFUSAL_MESSAGE, grounded=False, sources=[], debug={})

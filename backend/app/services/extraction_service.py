@@ -32,6 +32,30 @@ def extract_pdf(path: Path) -> list[PageText]:
     return pages
 
 
+def extract_file(path: Path, file_type: str) -> list[PageText]:
+    if file_type == "pdf":
+        return extract_pdf(path)
+    if file_type in {"txt", "md"}:
+        text = path.read_text(encoding="utf-8")
+        if not text.strip():
+            raise NoExtractableTextError("No extractable text")
+        return [PageText(page_number=1, text=text)]
+    if file_type == "docx":
+        return _extract_docx(path)
+    raise ValueError(f"Unsupported file type: {file_type}")
+
+
+def _extract_docx(path: Path) -> list[PageText]:
+    from docx import Document
+
+    document = Document(path)
+    paragraphs = [paragraph.text.strip() for paragraph in document.paragraphs]
+    text = "\n\n".join(paragraph for paragraph in paragraphs if paragraph)
+    if not text:
+        raise NoExtractableTextError("No extractable text")
+    return [PageText(page_number=1, text=text)]
+
+
 def _extract_page_text(page: fitz.Page) -> str:
     blocks = page.get_text("blocks")
     text_blocks = [block for block in blocks if len(block) > 6 and block[4].strip()]

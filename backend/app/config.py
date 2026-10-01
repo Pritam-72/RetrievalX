@@ -38,11 +38,14 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_content: bool = False
     frontend_origin: str = "http://localhost:3000"
+    debug_enabled: bool = False
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/docqa"
     database_url_unpooled: str = ""
     database_url_test: str = ""
     upload_dir: str = "./uploads"
     max_upload_mb: int = Field(default=25, gt=0)
+    min_cosine: float = Field(default=0.30, ge=-1, le=1)
+    max_question_length: int = Field(default=2000, gt=0)
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = Field(default=384, gt=0)
     reranker_model: str = "BAAI/bge-reranker-base"

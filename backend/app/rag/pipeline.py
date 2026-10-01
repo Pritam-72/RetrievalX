@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from time import perf_counter
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,22 +20,37 @@ async def answer_question(
     retriever: Retriever,
     embedder: EmbeddingService,
     llm: LLMClient,
+    min_cosine: float = 0.0,
 ) -> PipelineResult:
+    started = perf_counter()
     query_embedding = embedder.embed_query(question)
     candidates = await retriever.search(
         session,
         user_id=user_id,
         document_ids=document_ids,
         query_embedding=query_embedding,
+        min_cosine=min_cosine,
     )
+    debug = {
+        "top_scores": [candidate.cosine_score for candidate in candidates],
+        "gate_outcomes": {"cosine_floor": bool(candidates)},
+        "timings_ms": {"retrieval": round((perf_counter() - started) * 1000, 2)},
+    }
     if not candidates:
-        return refusal()
+        result = refusal()
+        result.debug.update(debug)
+        return result
 
     raw = await llm.generate(SYSTEM_PROMPT, build_user_message(question, candidates))
     result = parse_llm_answer(raw)
+    debug["gate_outcomes"]["answerable"] = result.answerable
     if not result.answerable or not result.answer.strip():
-        return refusal()
-    return grounded_result(result, candidates)
+        refused = refusal()
+        refused.debug.update(debug)
+        return refused
+    grounded = grounded_result(result, candidates)
+    grounded.debug.update(debug)
+    return grounded
 
 
 def grounded_result(

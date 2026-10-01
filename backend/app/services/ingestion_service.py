@@ -8,7 +8,7 @@ from app.models.entities import Document, DocumentChunk, DocumentStatus
 from app.services.chunking_service import Chunk, chunk_pages
 from app.services.cleaning_service import clean_pages
 from app.services.embedding_service import EmbeddingService
-from app.services.extraction_service import extract_pdf
+from app.services.extraction_service import extract_file, extract_pdf
 
 
 async def ingest_pdf(
@@ -40,6 +40,33 @@ async def ingest_pdf(
             session.add_all(rows)
             document.status = DocumentStatus.READY
             document.chunk_count = len(rows)
+        return document
+    except Exception as error:
+        await session.rollback()
+        async with session.begin():
+            document.status = DocumentStatus.FAILED
+            document.error_message = str(error)
+        raise
+
+
+async def ingest_existing_document(
+    session: AsyncSession,
+    *,
+    document: Document,
+    path: Path,
+    embedder: EmbeddingService,
+) -> Document:
+    document.status = DocumentStatus.PROCESSING
+    await session.commit()
+    try:
+        pages = clean_pages(extract_file(path, document.file_type))
+        chunks = chunk_pages(pages)
+        rows = build_chunk_rows(document, chunks, embedder)
+        async with session.begin():
+            session.add_all(rows)
+            document.status = DocumentStatus.READY
+            document.chunk_count = len(rows)
+            document.page_count = len(pages) if document.file_type == "pdf" else None
         return document
     except Exception as error:
         await session.rollback()
